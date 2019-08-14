@@ -37,7 +37,7 @@ function todos (state = [], action) {
             return state.concat([action.todo])
         case 'REMOVE_TODO' :
             return state.filter((todo) => todo.id !== action.id)
-        case 'TOOGLE_TODO' :
+        case 'TOGGLE_TODO' :
             return state.map((todo) => todo.id !== action.id ? todo :
                 Object.assign({}, todo, { complete: !todo.complete }))
         default: 
@@ -56,17 +56,9 @@ function goals (state = [], action) {
     }
 }
 
-const store = createStore(todos)
-
-store.subscribe(() => {
-    console.log('The new state is: ', store.getState())
-})
-
-store.dispatch({
-    type: 'ADD_TODO',
-    todo: {
-        id: 0,
-        name: 'Learn Redux',
-        complete: false
+function app (state={}, action) {
+    return {
+        todos: todos(state.todos, action),
+        goals: goals(state.goals, action)
     }
-})
+}
