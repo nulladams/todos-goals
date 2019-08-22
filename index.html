@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Todos Goals</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
 </head>
 
 <body>
@@ -25,13 +26,13 @@
 
 
         // Library code
-        function createStore (reducer) {
+        // function createStore (reducer) {
             // The store should have four parts
             // 1. The state
             // 2. Get the state
             // 3. Listen to changes on the state
             // 4. Update the state
-
+        /*
             let state
             let listeners = []
 
@@ -55,6 +56,8 @@
                 dispatch
             }
         }
+
+        */
 
         //App code
         const ADD_TODO = 'ADD_TODO'
@@ -97,7 +100,6 @@
                 id,
             }
         }
-
 
 
         function todos (state = [], action) {
@@ -151,7 +153,7 @@
             return store.dispatch(action)
         }
 
-        const store = createStore(app)
+        const store = Redux.createStore(app)
 
         store.subscribe(() => {
             console.log('The new state is: ', store.getState())
