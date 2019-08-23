@@ -74,6 +74,7 @@
         const TOGGLE_TODO = 'TOGGLE_TODO'
         const ADD_GOAL = 'ADD_GOAL'
         const REMOVE_GOAL = 'REMOVE_GOAL'
+        const RECEIVE_DATA = 'RECEIVE_DATA'
 
         function addTodoAction (todo) {
             return {
@@ -110,6 +111,14 @@
             }
         }
 
+        function receiveDataAction (todos, goals) {
+            return {
+                type: RECEIVE_DATA,
+                todos,
+                goals,
+            }
+        }
+
 
         function todos (state = [], action) {
             switch (action.type) {
@@ -120,6 +129,8 @@
                 case TOGGLE_TODO :
                     return state.map((todo) => todo.id !== action.id ? todo :
                         Object.assign({}, todo, { complete: !todo.complete }))
+                case RECEIVE_DATA :
+                    return action.todos
                 default: 
                     return state
             }
@@ -131,6 +142,18 @@
                     return state.concat([action.goal])
                 case REMOVE_GOAL :
                     return state.filter((goal) => goal.id !== action.id)
+                case RECEIVE_DATA :
+                    return action.goals
+                default :
+                    return state
+            }
+        }
+
+        function loading (state = true, action) {
+            switch(action.type) {
+                case RECEIVE_DATA :
+                    console.log('entrei')
+                    return false
                 default :
                     return state
             }
@@ -157,7 +180,7 @@
                 action.type === ADD_GOAL &&
                 action.goal.name.toLowerCase().includes('bitcoin')
             ) {
-                return alert("Nope. Tha's a bad idea.")
+                return alert("Nope. That's a bad idea.")
             }
 
             return store.dispatch(action)
@@ -193,6 +216,7 @@
         const store = Redux.createStore(Redux.combineReducers({
             todos,
             goals,
+            loading,
         }), Redux.applyMiddleware(checker, logger))
 
         store.subscribe(() => {
@@ -382,11 +406,26 @@
             componentDidMount() {
                 const { store } = this.props
 
+                Promise.all([
+                    API.fetchTodos(),
+                    API.fetchGoals()
+                ]).then(([ todos, goals ]) => {
+                    store.dispatch(receiveDataAction(todos, goals))
+                })
+
                 store.subscribe(() => this.forceUpdate())
             }
             render() {
                 const { store } = this.props
-                const { todos, goals } = store.getState()
+                const { todos, goals, loading } = store.getState()
+
+                console.log('loading, ', loading)
+
+                
+                if (loading === true) {
+                    return <h3>Loading</h3>
+                }
+
                 return (
                     <div>
                         <Todos todos={todos} store={this.props.store}/>
