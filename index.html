@@ -479,20 +479,14 @@
 
         class App extends React.Component {
             componentDidMount() {
-                const { store } = this.props
+                const { dispatch } = this.props
 
-                store.dispatch(handleInitialData())
+                dispatch(handleInitialData())
 
-                store.subscribe(() => this.forceUpdate())
+            //    store.subscribe(() => this.forceUpdate())
             }
             render() {
-                const { store } = this.props
-                const { loading } = store.getState()
-
-                console.log('loading, ', loading)
-
-                
-                if (loading === true) {
+                if (this.props.loading === true) {
                     return <h3>Loading</h3>
                 }
 
@@ -507,6 +501,45 @@
 
         const Context = React.createContext()
 
+        function connect(mapStateToProps) {
+            return (Component) => {
+
+                class Receiver extends React.Component {
+                    componentDidMount () {
+                        const {subscribe} = this.props.store
+
+                        this.unsubscribe = subscribe(() => {
+                            this.forceUpdate()
+                        })
+
+                    }
+                    componentWillUnmount () {
+                        this.unsubscribe()
+                    }
+                    render() {
+                        const { dispatch, getState } = this.props.store
+                        const state = getState()
+                        const stateNeeded = mapStateToProps(state)
+                        return <Component {...stateNeeded} dispatch={dispatch} />
+                    }
+                }
+
+                class ConnectedComponent extends React.Component {
+                    render() {
+                        return (
+                            <Context.Consumer>
+                                {(store) => <Receiver store={store} />}
+                            </Context.Consumer>
+                        )
+                    }
+                }
+
+                return ConnectedComponent
+
+            }
+        }
+
+        /*
         class ConnectedTodos extends React.Component {
             render() {
                 return (
@@ -520,7 +553,13 @@
                 )
             }
         }
+        */
 
+        const ConnectedTodos = connect((state) => ({
+            todos: state.todos
+        }))(Todos)
+
+        /*
         class ConnectedGoals extends React.Component {
             render() {
                 return (
@@ -534,7 +573,13 @@
                 )
             }
         }
+        */
 
+        const ConnectedGoals = connect((state) => ({
+            goals: state.goals
+        }))(Goals)
+
+        /*
         class ConnectedApp extends React.Component {
             render() {
                 return (
@@ -546,6 +591,12 @@
                 )
             }
         }
+        */
+
+        const ConnectedApp = connect((state) => ({
+            loading: state.loading
+        }))(App)
+
 
         class Provider extends React.Component {
             render() {
